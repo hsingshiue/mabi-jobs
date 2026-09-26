@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>六分身兼職備料</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #e7eff6;
+  --navy: #274a6e;
+  --navy-2: #3b6e9c;
+  --sky: #a9d2ee;
+  --surface: #ffffff;
+  --surface-2: #eef5fa;
+  --line: #d8e5ef;
+  --ink: #1f2b37;
+  --ink-2: #52657a;
+  --ink-3: #8b9bac;
+  --accent: #5f9cc9;
+  --accent-deep: #2f6f9f;
+  --accent-soft: #e4f0f9;
+  --blue: #4f8fbf;
+  --blue-soft: #e2eff8;
+  --gold: #b8892f;
+  --gold-soft: #f8eed6;
+  --red: #b04a55;
+  --red-soft: #f7e3e5;
+  --grey-soft: #edf0f3;
+  --c1: #5f9cc9; --c2: #e39aad; --c3: #d1a445; --c4: #7fb896; --c5: #a38ccf; --c6: #e0936a;
+  --shadow: 0 1px 2px rgba(40, 80, 120, .06), 0 6px 20px rgba(40, 80, 120, .06);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.5 "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+input { font: inherit; color: inherit; }
+
+.hero {
+  background: linear-gradient(135deg, var(--navy), var(--navy-2));
+  border-bottom: 5px solid var(--sky); color: #fff; margin-bottom: 22px;
+}
+header {
+  padding: 34px 20px 28px; max-width: 1280px; margin: 0 auto;
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px;
+}
+header .kicker { font-size: 12px; letter-spacing: .2em; color: var(--sky); margin-bottom: 6px; }
+header h1 { margin: 0; font-size: 30px; letter-spacing: .06em; }
+header h1 span { color: var(--sky); }
+header p { margin: 6px 0 0; color: rgba(255,255,255,.78); font-size: 14px; }
+header .meta { color: rgba(255,255,255,.7); font-size: 12px; background: rgba(255,255,255,.1); padding: 4px 10px; border-radius: 999px; }
+
+.layout {
+  max-width: 1280px; margin: 0 auto; padding: 0 20px 40px;
+  display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: start;
+}
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+
+/* 角色分頁 */
+.chars { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; padding: 8px; }
+.char {
+  border: 1px solid transparent; background: var(--surface-2); border-radius: 10px;
+  padding: 8px 6px; text-align: center; position: relative; min-width: 0;
+}
+.char .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+.char .nm { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.char .cnt { font-size: 12px; color: var(--ink-3); }
+.char.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.char.active .cnt { color: rgba(255,255,255,.85); }
+.char .edit {
+  position: absolute; top: 2px; right: 4px; border: 0; background: none; font-size: 12px; opacity: 0; padding: 2px;
+  color: inherit;
+}
+.char.active .edit, .char:hover .edit { opacity: .7; }
+.char input { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 2px 4px; text-align: center; background: var(--surface); color: var(--ink); }
+
+.toolbar { padding: 10px 12px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.search { flex: 1 1 200px; display: flex; align-items: center; gap: 6px; background: var(--surface-2); border-radius: 8px; padding: 6px 10px; }
+.search input { border: 0; background: none; outline: none; width: 100%; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 3px 11px; font-size: 13px; }
+.chip.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 12px 12px; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 5px 12px; font-size: 13px; }
+.btn:hover { border-color: var(--ink-3); }
+.btn.danger { color: var(--red); }
+.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* 任務列表 */
+.list { padding: 4px 12px 16px; }
+.city { margin: 14px 0 6px; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.city::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--accent), transparent); opacity: .6; }
+.city small { font-size: 12px; font-weight: normal; color: var(--ink-3); }
+.warn { font-size: 12px; background: var(--grey-soft); color: var(--ink-2); padding: 1px 8px; border-radius: 6px; font-weight: normal; }
+.shop { font-size: 13px; color: var(--ink-3); margin: 10px 0 4px; }
+.jobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 6px; }
+.job {
+  display: flex; gap: 10px; align-items: flex-start; text-align: left; width: 100%;
+  border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 9px 10px;
+}
+.job:hover { border-color: var(--accent); }
+.job.on { border-color: var(--accent); background: var(--accent-soft); }
+.box { flex: none; width: 18px; height: 18px; border: 1.5px solid var(--ink-3); border-radius: 5px; margin-top: 2px; display: grid; place-items: center; font-size: 12px; color: transparent; }
+.job.on .box { background: var(--accent); border-color: var(--accent); color: #fff; }
+.jb { min-width: 0; flex: 1; }
+.jt { font-weight: 600; }
+.jn { font-size: 12px; color: var(--ink-3); }
+.jm { font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+.jnote { font-size: 12px; color: var(--accent-deep); margin-top: 2px; }
+.tag { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 5px; margin-right: 4px; font-weight: normal; vertical-align: 1px; }
+.tag.errand { background: var(--blue-soft); color: var(--blue); }
+.tag.star { background: var(--gold-soft); color: var(--gold); }
+.tag.craft { background: var(--red-soft); color: var(--red); }
+.tag.todo { background: var(--grey-soft); color: var(--ink-2); }
+.who { display: flex; gap: 3px; margin-top: 5px; }
+.who i { width: 7px; height: 7px; border-radius: 50%; display: block; }
+.empty { color: var(--ink-3); text-align: center; padding: 30px; }
+
+/* 總表 */
+aside { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; display: flex; flex-direction: column; gap: 14px; scrollbar-width: thin; }
+aside .panel { flex: none; }
+aside .hd { padding: 14px 16px 12px; background: linear-gradient(135deg, var(--navy), var(--navy-2)); color: #fff; border-radius: 13px 13px 0 0; }
+aside .hd .chip { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.25); color: #fff; }
+aside .hd .chip.on { background: #fff; color: var(--navy); border-color: #fff; }
+aside .hd .stat { background: rgba(255,255,255,.12); color: rgba(255,255,255,.75); }
+aside .hd .stat b { color: #fff; }
+aside h2 { margin: 0 0 8px; font-size: 17px; display: flex; justify-content: space-between; align-items: baseline; }
+aside h2 small { font-size: 12px; color: var(--sky); font-weight: normal; }
+.stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 8px; }
+.stat { text-align: center; font-size: 11px; color: var(--ink-3); background: var(--surface-2); border-radius: 6px; padding: 3px 0; border-bottom: 2px solid; }
+.stat b { display: block; font-size: 15px; color: var(--ink); }
+.mats { padding: 6px 16px 12px; }
+.route .rh { padding: 14px 16px 6px; display: flex; justify-content: space-between; align-items: baseline; }
+.route .rh h2 { margin: 0; font-size: 17px; }
+.route .rh small { color: var(--ink-3); font-size: 12px; }
+.stops { padding: 0 16px 10px; }
+.rcity { font-size: 12px; color: var(--accent-deep); letter-spacing: .1em; margin: 10px 0 0; }
+.stop { display: grid; grid-template-columns: 30px 1fr; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.stop:last-child { border-bottom: 0; }
+.stop .no { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+.stop .who2 { font-weight: 600; }
+.stop .tk { font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+.stop .tk em { font-style: normal; color: var(--ink-3); margin: 0 4px; }
+.mat { padding: 7px 0; border-bottom: 1px dashed var(--line); }
+.mat:last-child { border-bottom: 0; }
+.mr { display: flex; justify-content: space-between; gap: 8px; }
+.mr b { font-size: 17px; color: var(--accent-deep); font-variant-numeric: tabular-nums; }
+.split { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.split span { font-size: 11px; padding: 0 6px; border-radius: 5px; background: var(--surface-2); color: var(--ink-2); border-left: 3px solid; }
+.sec { font-size: 12px; color: var(--ink-3); margin: 12px 0 2px; letter-spacing: .05em; }
+.ft { padding: 10px 16px; border-top: 1px solid var(--line); display: flex; gap: 8px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 8px 16px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.show { opacity: 1; }
+
+.credit { max-width: 1280px; margin: 0 auto; padding: 0 20px 32px; font-size: 12px; color: var(--ink-3); line-height: 1.8; }
+.credit a { color: var(--accent-deep); }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; padding: 0 12px 30px; }
+  header { padding: 22px 12px 18px; }
+  header h1 { font-size: 24px; }
+  aside { position: static; max-height: none; }
+  .chars { grid-template-columns: repeat(3, 1fr); }
+  .jobs { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="hero">
+<header>
+  <div>
+    <div class="kicker">MABINOGI MOBILE · 6 CHARACTERS</div>
+    <h1>六分身<span>兼職備料</span></h1>
+    <p>每隻角色分開勾今天要跑的兼職，右邊一次算好全部原料。</p>
+  </div>
+  <div class="meta" id="meta"></div>
+</header>
+</div>
+
+<div class="layout">
+  <main class="panel">
+    <div class="chars" id="chars"></div>
+    <div class="toolbar">
+      <label class="search">⌕ <input id="q" placeholder="搜尋任務、NPC、材料…"></label>
+      <div class="chips" id="cities"></div>
+      <div class="chips" id="types"></div>
+    </div>
+    <div class="actions">
+      <button class="btn danger" id="clearOne">清除此角色</button>
+      <button class="btn danger" id="clearAll">清除全部角色</button>
+    </div>
+    <div class="list" id="list"></div>
+  </main>
+
+  <aside>
+  <section class="panel">
+    <div class="hd">
+      <h2>原料總數 <small id="scopeLabel"></small></h2>
+      <div class="chips" id="scope"></div>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="mats" id="mats"></div>
+    <div class="ft">
+      <button class="btn primary" id="copyText">複製清單</button>
+    </div>
+  </section>
+  <section class="panel route">
+    <div class="rh"><h2>交付路線</h2><small id="routeWho"></small></div>
+    <div class="stops" id="stops"></div>
+    <div class="ft">
+      <button class="btn primary" id="copyRoute">複製路線</button>
+    </div>
+  </section>
+  </aside>
+</div>
+<footer class="credit">
+  任務資料來源：
+  <a href="https://docs.google.com/spreadsheets/d/1dY03kiMC4x3jBB4gA71jdo2YqsLAgHC7kp-WmbsNSnU/" target="_blank" rel="noopener">瑪奇M 兼職列表</a>（墨音 整理）、
+  <a href="https://mabinogi-mobile-jobs.vtuberparrot2021.chatgpt.site/" target="_blank" rel="noopener">瑪奇M 每日兼職備料器</a>。感謝原作者整理。
+</footer>
+<div class="toast" id="toast"></div>
+
+<script src="jobs-data.js"></script>
+<script>
+const DATA = window.JOBS_DATA || { jobs: [] };
+const JOBS = DATA.jobs;
+const BY_ID = Object.fromEntries(JOBS.map(j => [j.id, j]));
+const CITIES = [...new Set(JOBS.map(j => j.city))];
+const CHAR_COLORS = [1, 2, 3, 4, 5, 6].map(i => `var(--c${i})`);
+const TYPES = [
+  ["all", "全部"], ["errand", "跑腿"], ["star", "大推"], ["craft", "需加工"], ["normal", "一般交付"],
+];
+const KEY = "mabi-jobs-6chars-v1";
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && Array.isArray(s.chars) && s.chars.length === 6) return s;
+  } catch (e) {}
+  return {
+    active: 0, city: "all", type: "all", scope: "all",
+    chars: [1, 2, 3, 4, 5, 6].map(i => ({ name: `角色${i}`, sel: {} })),
+  };
+}
+const state = load();
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+// 清掉資料更新後已不存在的任務
+state.chars.forEach(c => Object.keys(c.sel).forEach(id => { if (!BY_ID[id]) delete c.sel[id]; }));
+
+function jobKind(j) {
+  if (j.name.includes("【跑腿】")) return "errand";
+  if (j.name.includes("【大推】")) return "star";
+  if (j.afterAccept || j.note) return "craft";
+  return "normal";
+}
+const cleanName = n => n.replace(/【[^】]*】/g, "");
+const isErrand = j => jobKind(j) === "errand";
+
+function tagsHtml(j) {
+  const k = jobKind(j);
+  let t = "";
+  if (k === "errand") t += '<span class="tag errand">跑腿</span>';
+  if (k === "star") t += '<span class="tag star">大推</span>';
+  if (j.afterAccept) t += '<span class="tag craft">需加工</span>';
+  if (j.incomplete || j.deliverable.quantity == null) t += '<span class="tag todo">資料待補</span>';
+  return t;
+}
+
+function matText(j) {
+  if (isErrand(j)) return "跑腿：" + esc(j.deliverable.name.replace("【跑腿】", ""));
+  const mats = j.materials.map(m => `${esc(m.name)} ×${m.quantity ?? "?"}`).join("、");
+  const d = j.deliverable;
+  const sameAsMat = j.materials.length === 1 && j.materials[0].name === d.name;
+  return sameAsMat ? mats : `交付 ${esc(d.name)} ×${d.quantity ?? "?"}　←　${mats}`;
+}
+
+function matches(j) {
+  if (state.city !== "all" && j.city !== state.city) return false;
+  if (state.type !== "all" && jobKind(j) !== state.type) return false;
+  const q = $("q").value.trim();
+  if (!q) return true;
+  const hay = [j.name, j.npc, j.shop, j.city, j.area, j.deliverable.name, ...j.materials.map(m => m.name)].join(" ");
+  return hay.includes(q);
+}
+
+function renderChars() {
+  $("chars").innerHTML = state.chars.map((c, i) => `
+    <div class="char ${i === state.active ? "active" : ""}" data-i="${i}" role="button" tabindex="0">
+      <button class="edit" data-edit="${i}" title="改名">✎</button>
+      <span class="nm"><span class="dot" style="background:${CHAR_COLORS[i]}"></span>${esc(c.name)}</span>
+      <span class="cnt">${Object.keys(c.sel).length} 個任務</span>
+    </div>`).join("");
+}
+
+function renderFilters() {
+  $("cities").innerHTML = [["all", "全部地區"], ...CITIES.map(c => [c, c])]
+    .map(([v, l]) => `<button class="chip ${state.city === v ? "on" : ""}" data-city="${esc(v)}">${esc(l)}</button>`).join("");
+  $("types").innerHTML = TYPES
+    .map(([v, l]) => `<button class="chip ${state.type === v ? "on" : ""}" data-type="${v}">${l}</button>`).join("");
+}
+
+function renderList() {
+  const sel = state.chars[state.active].sel;
+  const shown = JOBS.filter(matches);
+  if (!shown.length) { $("list").innerHTML = '<div class="empty">沒有符合的任務</div>'; return; }
+  // 城市 → 地點 分組（保持資料原本的順序）
+  const groups = new Map();
+  for (const j of shown) {
+    if (!groups.has(j.city)) groups.set(j.city, new Map());
+    const shops = groups.get(j.city);
+    const label = (j.area && j.area !== j.city ? j.area + " · " : "") + j.shop;
+    if (!shops.has(label)) shops.set(label, []);
+    shops.get(label).push(j);
+  }
+  let html = "";
+  for (const [city, shops] of groups) {
+    const warn = (DATA.incompleteRegions || []).includes(city) ? '<span class="warn">資料還沒整理完</span>' : "";
+    html += `<h3 class="city">${esc(city)} ${warn}</h3>`;
+    for (const [label, jobs] of shops) {
+      html += `<div class="shop">${esc(label)}</div><div class="jobs">${jobs.map(jobHtml).join("")}</div>`;
+    }
+  }
+  $("list").innerHTML = html;
+}
+
+function jobHtml(j) {
+  const sel = state.chars[state.active].sel;
+  {
+    const who = state.chars.map((c, i) => c.sel[j.id] ? `<i style="background:${CHAR_COLORS[i]}" title="${esc(c.name)}"></i>` : "").join("");
+    return `
+      <button class="job ${sel[j.id] ? "on" : ""}" data-id="${esc(j.id)}">
+        <span class="box">✓</span>
+        <span class="jb">
+          <span class="jt">${tagsHtml(j)}${esc(cleanName(j.name))}</span>
+          <span class="jn"> · ${esc(j.npc)}</span>
+          <div class="jm">${matText(j)}</div>
+          ${j.note ? `<div class="jnote">${esc(j.note)}</div>` : ""}
+          ${who ? `<div class="who">${who}</div>` : ""}
+        </span>
+      </button>`;
+  }
+}
+
+function collect() {
+  const idx = state.scope === "all" ? [0, 1, 2, 3, 4, 5] : [state.active];
+  const mats = new Map();
+  for (const i of idx) {
+    for (const id of Object.keys(state.chars[i].sel)) {
+      const j = BY_ID[id];
+      if (!j) continue;
+      if (isErrand(j)) continue;
+      for (const m of j.materials) {
+        if (!mats.has(m.name)) mats.set(m.name, { name: m.name, total: 0, unknown: false, per: {} });
+        const e = mats.get(m.name);
+        if (m.quantity == null) e.unknown = true;
+        else { e.total += m.quantity; e.per[i] = (e.per[i] || 0) + m.quantity; }
+        if (m.quantity == null) e.per[i] = e.per[i] ?? "?";
+      }
+    }
+  }
+  return { idx, mats: [...mats.values()].sort((a, b) => b.total - a.total) };
+}
+
+const fmtTotal = m => m.unknown ? (m.total ? m.total + "+?" : "?") : m.total;
+
+function renderSummary() {
+  $("scope").innerHTML = [["all", "六隻合計"], ["one", "只看目前角色"]]
+    .map(([v, l]) => `<button class="chip ${state.scope === v ? "on" : ""}" data-scope="${v}">${l}</button>`).join("");
+  $("scopeLabel").textContent = state.scope === "all" ? "" : state.chars[state.active].name;
+  $("stats").innerHTML = state.chars.map((c, i) => `
+    <div class="stat" style="border-color:${CHAR_COLORS[i]}"><b>${Object.keys(c.sel).length}</b>${esc(c.name)}</div>`).join("");
+
+  const { mats } = collect();
+  if (!mats.length) { $("mats").innerHTML = '<div class="empty">還沒有需要準備的材料</div>'; return; }
+  let html = "";
+  for (const m of mats) {
+    const split = Object.entries(m.per)
+      .map(([i, q]) => `<span style="border-color:${CHAR_COLORS[i]}">${esc(state.chars[i].name)} ${q}</span>`).join("");
+    html += `<div class="mat"><div class="mr"><span>${esc(m.name)}</span><b>${fmtTotal(m)}</b></div>
+      ${state.scope === "all" ? `<div class="split">${split}</div>` : ""}</div>`;
+  }
+  $("mats").innerHTML = html;
+}
+
+// 目前角色的交付路線：依資料順序，按 城市 → NPC·地點 分站
+function routeStops() {
+  const sel = state.chars[state.active].sel;
+  const stops = new Map();
+  for (const j of JOBS) {
+    if (!sel[j.id]) continue;
+    const key = `${j.city}|${j.npc}|${j.shop}`;
+    if (!stops.has(key)) stops.set(key, { city: j.city, npc: j.npc, shop: j.shop, jobs: [] });
+    stops.get(key).jobs.push(j);
+  }
+  return [...stops.values()];
+}
+const deliverText = j => isErrand(j)
+  ? "跑腿：" + j.deliverable.name.replace("【跑腿】", "")
+  : `${j.deliverable.name} ×${j.deliverable.quantity ?? "?"}`;
+
+function renderRoute() {
+  const c = state.chars[state.active];
+  $("routeWho").innerHTML = `<span class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:${CHAR_COLORS[state.active]}"></span>${esc(c.name)}`;
+  const stops = routeStops();
+  if (!stops.length) { $("stops").innerHTML = '<div class="empty">這隻角色還沒有勾選任務</div>'; return; }
+  let html = "", city = null;
+  stops.forEach((s, n) => {
+    if (s.city !== city) { city = s.city; html += `<div class="rcity">${esc(city)}</div>`; }
+    html += `<div class="stop"><span class="no">${String(n + 1).padStart(2, "0")}</span><div>
+      <div class="who2">${esc(s.npc)} · ${esc(s.shop)}</div>
+      ${s.jobs.map(j => `<div class="tk">${esc(cleanName(j.name))}<em>→</em>${esc(deliverText(j))}</div>`).join("")}
+    </div></div>`;
+  });
+  $("stops").innerHTML = html;
+}
+
+function render() { renderChars(); renderFilters(); renderList(); renderSummary(); renderRoute(); save(); }
+
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 1600);
+}
+
+// ─── 事件 ───
+$("chars").addEventListener("click", e => {
+  const ed = e.target.closest("[data-edit]");
+  if (ed) {
+    e.stopPropagation();
+    const i = +ed.dataset.edit;
+    const box = ed.parentElement.querySelector(".nm");
+    box.innerHTML = `<input value="${esc(state.chars[i].name)}" maxlength="12">`;
+    const inp = box.querySelector("input");
+    inp.focus(); inp.select();
+    const done = () => { state.chars[i].name = inp.value.trim() || `角色${i + 1}`; render(); };
+    inp.addEventListener("blur", done);
+    inp.addEventListener("keydown", k => { if (k.key === "Enter") inp.blur(); if (k.key === "Escape") { inp.value = state.chars[i].name; inp.blur(); } });
+    return;
+  }
+  const c = e.target.closest(".char");
+  if (c && !e.target.closest("input")) { state.active = +c.dataset.i; render(); }
+});
+$("cities").addEventListener("click", e => { const b = e.target.closest("[data-city]"); if (b) { state.city = b.dataset.city; render(); } });
+$("types").addEventListener("click", e => { const b = e.target.closest("[data-type]"); if (b) { state.type = b.dataset.type; render(); } });
+$("scope").addEventListener("click", e => { const b = e.target.closest("[data-scope]"); if (b) { state.scope = b.dataset.scope; render(); } });
+$("q").addEventListener("input", renderList);
+$("list").addEventListener("click", e => {
+  const b = e.target.closest(".job"); if (!b) return;
+  const sel = state.chars[state.active].sel, id = b.dataset.id;
+  if (sel[id]) delete sel[id]; else sel[id] = true;
+  render();
+});
+$("clearOne").addEventListener("click", () => {
+  const c = state.chars[state.active];
+  if (confirm(`清除「${c.name}」的所有勾選？`)) { c.sel = {}; render(); }
+});
+$("clearAll").addEventListener("click", () => {
+  if (confirm("清除六隻角色的所有勾選？")) { state.chars.forEach(c => c.sel = {}); render(); }
+});
+$("copyText").addEventListener("click", async () => {
+  const { idx, mats } = collect();
+  const lines = [state.scope === "all" ? "【六隻合計】" : `【${state.chars[state.active].name}】`];
+  mats.forEach(m => lines.push(`${m.name} ×${fmtTotal(m)}` +
+    (idx.length > 1 ? `（${Object.entries(m.per).map(([i, q]) => state.chars[i].name + " " + q).join("、")}）` : "")));
+  copy(lines);
+});
+$("copyRoute").addEventListener("click", () => {
+  const lines = [`【${state.chars[state.active].name} 交付路線】`];
+  routeStops().forEach((s, n) => {
+    lines.push(`${String(n + 1).padStart(2, "0")} ${s.npc}・${s.shop}（${s.city}）`);
+    s.jobs.forEach(j => lines.push(`   ${cleanName(j.name)} → ${deliverText(j)}`));
+  });
+  copy(lines);
+});
+async function copy(lines) {
+  try { await navigator.clipboard.writeText(lines.join("\n")); toast("已複製"); }
+  catch (e) { toast("複製失敗，瀏覽器不允許"); }
+}
+
+const jobCount = JOBS.length;
+$("meta").textContent = `${jobCount} 個任務 · 資料同步 ${DATA.syncedAt || "—"}`;
+render();
+if (!jobCount) $("list").innerHTML = '<div class="empty">找不到 jobs-data.js（要跟 index.html 放在同一個資料夾），或先執行 python sync.py</div>';
+</script>
+</body>
+</html>
