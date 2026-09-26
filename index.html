@@ -395,10 +395,8 @@ function renderSummary() {
   if (!mats.length) { $("mats").innerHTML = '<div class="empty">還沒有需要準備的材料</div>'; $("progress").textContent = ""; return; }
   const done = mats.filter(m => got[m.name]).length;
   $("progress").textContent = `已備齊 ${done} / ${mats.length} 種${done === mats.length ? "　✓ 全部備齊" : ""}`;
-  // 打勾的沉到最下面
-  const sorted = [...mats.filter(m => !got[m.name]), ...mats.filter(m => got[m.name])];
   let html = "";
-  for (const m of sorted) {
+  for (const m of mats) {
     const split = Object.entries(m.per)
       .map(([i, q]) => `<span style="border-color:${CHAR_COLORS[i]}">${esc(state.chars[i].name)} ${q}</span>`).join("");
     html += `<div class="mat ${got[m.name] ? "got" : ""}" data-mat="${esc(m.name)}"><span class="box">✓</span><div>
