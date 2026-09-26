@@ -147,6 +147,12 @@ aside h2 small { font-size: 12px; color: var(--sky); font-weight: normal; }
 .mat:last-child { border-bottom: 0; }
 .mr { display: flex; justify-content: space-between; gap: 8px; }
 .mr b { font-size: 17px; color: var(--accent-deep); font-variant-numeric: tabular-nums; }
+.mat { display: grid; grid-template-columns: 26px 1fr; cursor: pointer; }
+.mat .box { margin-top: 3px; }
+.mat.got .box { background: var(--accent); border-color: var(--accent); color: #fff; }
+.mat.got .mr span, .mat.got .mr b { color: var(--ink-3); text-decoration: line-through; }
+.mat.got .split { opacity: .5; }
+.progress { font-size: 12px; color: var(--ink-3); padding: 8px 16px 0; }
 .split { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
 .split span { font-size: 11px; padding: 0 6px; border-radius: 5px; background: var(--surface-2); color: var(--ink-2); border-left: 3px solid; }
 .sec { font-size: 12px; color: var(--ink-3); margin: 12px 0 2px; letter-spacing: .05em; }
@@ -200,9 +206,11 @@ aside h2 small { font-size: 12px; color: var(--sky); font-weight: normal; }
       <div class="chips" id="scope"></div>
       <div class="stats" id="stats"></div>
     </div>
+    <div class="progress" id="progress"></div>
     <div class="mats" id="mats"></div>
     <div class="ft">
       <button class="btn primary" id="copyText">複製清單</button>
+      <button class="btn" id="clearGot">清除打勾</button>
     </div>
   </section>
   <section class="panel route">
@@ -368,6 +376,13 @@ function collect() {
 
 const fmtTotal = m => m.unknown ? (m.total ? m.total + "+?" : "?") : m.total;
 
+// 原料打勾：六隻合計、每隻角色各自一份
+function gotSet() {
+  state.got = state.got || {};
+  const k = state.scope === "all" ? "all" : String(state.active);
+  return state.got[k] = state.got[k] || {};
+}
+
 function renderSummary() {
   $("scope").innerHTML = [["all", "六隻合計"], ["one", "只看目前角色"]]
     .map(([v, l]) => `<button class="chip ${state.scope === v ? "on" : ""}" data-scope="${v}">${l}</button>`).join("");
@@ -376,13 +391,19 @@ function renderSummary() {
     <div class="stat" style="border-color:${CHAR_COLORS[i]}"><b>${Object.keys(c.sel).length}</b>${esc(c.name)}</div>`).join("");
 
   const { mats } = collect();
-  if (!mats.length) { $("mats").innerHTML = '<div class="empty">還沒有需要準備的材料</div>'; return; }
+  const got = gotSet();
+  if (!mats.length) { $("mats").innerHTML = '<div class="empty">還沒有需要準備的材料</div>'; $("progress").textContent = ""; return; }
+  const done = mats.filter(m => got[m.name]).length;
+  $("progress").textContent = `已備齊 ${done} / ${mats.length} 種${done === mats.length ? "　✓ 全部備齊" : ""}`;
+  // 打勾的沉到最下面
+  const sorted = [...mats.filter(m => !got[m.name]), ...mats.filter(m => got[m.name])];
   let html = "";
-  for (const m of mats) {
+  for (const m of sorted) {
     const split = Object.entries(m.per)
       .map(([i, q]) => `<span style="border-color:${CHAR_COLORS[i]}">${esc(state.chars[i].name)} ${q}</span>`).join("");
-    html += `<div class="mat"><div class="mr"><span>${esc(m.name)}</span><b>${fmtTotal(m)}</b></div>
-      ${state.scope === "all" ? `<div class="split">${split}</div>` : ""}</div>`;
+    html += `<div class="mat ${got[m.name] ? "got" : ""}" data-mat="${esc(m.name)}"><span class="box">✓</span><div>
+      <div class="mr"><span>${esc(m.name)}</span><b>${fmtTotal(m)}</b></div>
+      ${state.scope === "all" ? `<div class="split">${split}</div>` : ""}</div></div>`;
   }
   $("mats").innerHTML = html;
 }
@@ -456,11 +477,18 @@ $("list").addEventListener("click", e => {
 });
 $("clearOne").addEventListener("click", () => {
   const c = state.chars[state.active];
-  if (confirm(`清除「${c.name}」的所有勾選？`)) { c.sel = {}; render(); }
+  if (confirm(`清除「${c.name}」的所有勾選？`)) { c.sel = {}; if (state.got) delete state.got[state.active]; render(); }
 });
 $("clearAll").addEventListener("click", () => {
-  if (confirm("清除六隻角色的所有勾選？")) { state.chars.forEach(c => c.sel = {}); render(); }
+  if (confirm("清除六隻角色的所有勾選？")) { state.chars.forEach(c => c.sel = {}); state.got = {}; render(); }
 });
+$("mats").addEventListener("click", e => {
+  const row = e.target.closest("[data-mat]"); if (!row) return;
+  const got = gotSet(), n = row.dataset.mat;
+  if (got[n]) delete got[n]; else got[n] = true;
+  render();
+});
+$("clearGot").addEventListener("click", () => { const g = gotSet(); Object.keys(g).forEach(k => delete g[k]); render(); });
 $("copyText").addEventListener("click", async () => {
   const { idx, mats } = collect();
   const lines = [state.scope === "all" ? "【六隻合計】" : `【${state.chars[state.active].name}】`];
