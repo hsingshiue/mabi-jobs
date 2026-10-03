@@ -2081,7 +2081,7 @@ window.JOBS_DATA = {
   {
    "city": "班克爾",
    "area": "班克爾",
-   "shop": "法皇聽",
+   "shop": "法皇廳",
    "npc": "康格",
    "name": "裝在小瓶裡的希望",
    "deliverable": {
@@ -2090,8 +2090,16 @@ window.JOBS_DATA = {
    },
    "materials": [
     {
-     "name": "傷害減少藥水",
-     "quantity": 1
+     "name": "血紅藥草",
+     "quantity": 10
+    },
+    {
+     "name": "咻咻蘑菇汁液",
+     "quantity": 3
+    },
+    {
+     "name": "獨角仙",
+     "quantity": 6
     }
    ],
    "afterAccept": true,
@@ -2100,22 +2108,22 @@ window.JOBS_DATA = {
     "type": "製作",
     "times": 1
    },
-   "note": "試算表沒寫原料，先以成品計算",
+   "note": "另需 煉金術碎屑×10（不能共用保管箱，各角色自備，不列入總數）",
    "id": "班克爾|康格|裝在小瓶裡的希望"
   },
   {
    "city": "班克爾",
    "area": "班克爾",
-   "shop": "法皇聽",
+   "shop": "法皇廳",
    "npc": "康格",
    "name": "【跑腿】偵查班克爾北門月之門",
    "deliverable": {
-    "name": "跑腿-萊班克爾北門月之門",
+    "name": "跑腿-班克爾北門月之門",
     "quantity": 1
    },
    "materials": [
     {
-     "name": "跑腿-萊班克爾北門月之門",
+     "name": "跑腿-班克爾北門月之門",
      "quantity": 1
     }
    ],
@@ -2348,6 +2356,6 @@ window.JOBS_DATA = {
    "id": "班克爾|伊比|幫我找到森林的幽靈"
   }
  ],
- "siteUpdatedAt": "2026-10-03T02:05:13.224Z",
- "syncedAt": "2026-10-03 10:05"
+ "siteUpdatedAt": "2026-10-03T02:15:14.312Z",
+ "syncedAt": "2026-10-03 10:15"
 };

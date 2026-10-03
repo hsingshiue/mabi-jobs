@@ -34,6 +34,9 @@ ALIASES = {
     "一瓶裝滿水的瓶子": "裝水的瓶子",
 }
 
+# 不能共用保管箱的材料：只寫在備註，不列入總數
+NOT_COUNTED = {"煉金術碎屑"}
+
 # 試算表沒寫製作/加工，但實際需要的（使用者確認過）
 CRAFT_OVERRIDES = {
     "滿懷溫暖的心意": {"type": "製作", "times": 1},
@@ -119,19 +122,27 @@ def sheet_row_to_job(row):
     if row["errand"] and not name.startswith("【"):
         name = "【跑腿】" + name
     item = {"name": row["deliver"], "quantity": 1 if row["errand"] else row["qty"]}
+    counted = [m for m in row["materials"] if m["name"] not in NOT_COUNTED]
+    personal = [m for m in row["materials"] if m["name"] in NOT_COUNTED]
     job = {
         "city": row["region"], "area": row["area"],
         "shop": row["shop"], "npc": row["npc"], "name": name,
         "deliverable": item,
-        "materials": row["materials"] or [dict(item)],
+        "materials": counted or [dict(item)],
         "afterAccept": bool(row["craft"]), "source": "sheet",
     }
+    notes = []
+    if row["note"]:
+        notes.append(row["note"])
     if row["craft"]:
         job["craft"] = row["craft"]
         if not row["materials"]:
-            job["note"] = "試算表沒寫原料，先以成品計算"
-    if row["note"]:
-        job["note"] = row["note"]
+            notes.append("試算表沒寫原料，先以成品計算")
+    if personal:
+        items = "、".join(f'{m["name"]}×{m["quantity"]}' for m in personal)
+        notes.append(f"另需 {items}（不能共用保管箱，各角色自備，不列入總數）")
+    if notes:
+        job["note"] = "；".join(notes)
     if row["star"]:
         job["star"] = True
     return job
