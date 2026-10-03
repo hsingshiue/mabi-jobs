@@ -27,6 +27,8 @@
   --red: #b04a55;
   --red-soft: #f7e3e5;
   --grey-soft: #edf0f3;
+  --violet: #7a62b3;
+  --violet-soft: #eee8f8;
   --c1: #5f9cc9; --c2: #e39aad; --c3: #d1a445; --c4: #7fb896; --c5: #a38ccf; --c6: #e0936a;
   --shadow: 0 1px 2px rgba(40, 80, 120, .06), 0 6px 20px rgba(40, 80, 120, .06);
 }
@@ -93,7 +95,6 @@ header .meta { color: rgba(255,255,255,.7); font-size: 12px; background: rgba(25
 .city { margin: 14px 0 6px; font-size: 17px; display: flex; align-items: center; gap: 8px; }
 .city::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--accent), transparent); opacity: .6; }
 .city small { font-size: 12px; font-weight: normal; color: var(--ink-3); }
-.warn { font-size: 12px; background: var(--grey-soft); color: var(--ink-2); padding: 1px 8px; border-radius: 6px; font-weight: normal; }
 .shop { font-size: 13px; color: var(--ink-3); margin: 10px 0 4px; }
 .jobs { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 6px; }
 .job {
@@ -113,6 +114,7 @@ header .meta { color: rgba(255,255,255,.7); font-size: 12px; background: rgba(25
 .tag.errand { background: var(--blue-soft); color: var(--blue); }
 .tag.star { background: var(--gold-soft); color: var(--gold); }
 .tag.craft { background: var(--red-soft); color: var(--red); }
+.tag.make { background: var(--violet-soft); color: var(--violet); }
 .tag.todo { background: var(--grey-soft); color: var(--ink-2); }
 .who { display: flex; gap: 3px; margin-top: 5px; }
 .who i { width: 7px; height: 7px; border-radius: 50%; display: block; }
@@ -237,7 +239,7 @@ const BY_ID = Object.fromEntries(JOBS.map(j => [j.id, j]));
 const CITIES = [...new Set(JOBS.map(j => j.city))];
 const CHAR_COLORS = [1, 2, 3, 4, 5, 6].map(i => `var(--c${i})`);
 const TYPES = [
-  ["all", "全部"], ["errand", "跑腿"], ["star", "大推"], ["craft", "需加工"], ["normal", "一般交付"],
+  ["all", "全部"], ["errand", "跑腿"], ["star", "大推"], ["make", "製作"], ["craft", "加工"], ["normal", "一般交付"],
 ];
 const KEY = "mabi-jobs-6chars-v1";
 
@@ -262,8 +264,9 @@ state.chars.forEach(c => Object.keys(c.sel).forEach(id => { if (!BY_ID[id]) dele
 
 function jobKind(j) {
   if (j.name.includes("【跑腿】")) return "errand";
-  if (j.name.includes("【大推】")) return "star";
-  if (j.afterAccept || j.note) return "craft";
+  if (j.star || j.name.includes("【大推】")) return "star";
+  if (j.craft) return j.craft.type === "製作" ? "make" : "craft";
+  if (j.afterAccept) return "craft";
   return "normal";
 }
 const cleanName = n => n.replace(/【[^】]*】/g, "");
@@ -274,8 +277,9 @@ function tagsHtml(j) {
   let t = "";
   if (k === "errand") t += '<span class="tag errand">跑腿</span>';
   if (k === "star") t += '<span class="tag star">大推</span>';
-  if (j.afterAccept) t += '<span class="tag craft">需加工</span>';
-  if (j.incomplete || j.deliverable.quantity == null) t += '<span class="tag todo">資料待補</span>';
+  if (j.craft) t += `<span class="tag ${j.craft.type === "製作" ? "make" : "craft"}">${j.craft.type}${j.craft.times}次</span>`;
+  else if (j.afterAccept) t += '<span class="tag craft">需加工</span>';
+  if (j.deliverable.quantity == null) t += '<span class="tag todo">資料待補</span>';
   return t;
 }
 
@@ -327,8 +331,7 @@ function renderList() {
   }
   let html = "";
   for (const [city, shops] of groups) {
-    const warn = (DATA.incompleteRegions || []).includes(city) ? '<span class="warn">資料還沒整理完</span>' : "";
-    html += `<h3 class="city">${esc(city)} ${warn}</h3>`;
+    html += `<h3 class="city">${esc(city)}</h3>`;
     for (const [label, jobs] of shops) {
       html += `<div class="shop">${esc(label)}</div><div class="jobs">${jobs.map(jobHtml).join("")}</div>`;
     }

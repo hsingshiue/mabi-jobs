@@ -189,6 +189,10 @@ window.JOBS_DATA = {
    ],
    "afterAccept": true,
    "note": "需要加工兩次，蜘蛛網*20",
+   "craft": {
+    "type": "加工",
+    "times": 2
+   },
    "area": "提爾克那",
    "id": "提爾克那|麥爾坎|一起製作絲綢吧"
   },
@@ -308,6 +312,10 @@ window.JOBS_DATA = {
    ],
    "afterAccept": true,
    "note": "需要加工兩次，新芽蘑菇孢子*20 裝水的瓶子*2",
+   "craft": {
+    "type": "加工",
+    "times": 2
+   },
    "area": "提爾克那",
    "id": "提爾克那|迪莉絲|新鮮潔白的藥液"
   },
@@ -336,6 +344,10 @@ window.JOBS_DATA = {
    ],
    "afterAccept": true,
    "note": "血紅藥草*12 新芽蘑菇汁液*10 咻咻蘑菇*4",
+   "craft": {
+    "type": "製作",
+    "times": 1
+   },
    "area": "提爾克那",
    "id": "提爾克那|迪莉絲|尋找恢復藥水"
   },
@@ -489,6 +501,10 @@ window.JOBS_DATA = {
    ],
    "afterAccept": true,
    "note": "需要加工兩次，羊毛*20",
+   "craft": {
+    "type": "加工",
+    "times": 2
+   },
    "area": "提爾克那",
    "id": "提爾克那|迪恩|需要布料"
   },
@@ -565,6 +581,10 @@ window.JOBS_DATA = {
     }
    ],
    "afterAccept": false,
+   "craft": {
+    "type": "加工",
+    "times": 2
+   },
    "area": "提爾克那",
    "id": "提爾克那|佛格斯|就怕手滑"
   },
@@ -1002,6 +1022,7 @@ window.JOBS_DATA = {
     }
    ],
    "afterAccept": false,
+   "star": true,
    "area": "杜巴頓",
    "id": "杜巴頓|克莉絲|神秘的藥草"
   },
@@ -1040,6 +1061,7 @@ window.JOBS_DATA = {
     }
    ],
    "afterAccept": false,
+   "star": true,
    "area": "杜巴頓",
    "id": "杜巴頓|克莉絲|承載祈禱的水"
   },
@@ -1382,6 +1404,7 @@ window.JOBS_DATA = {
     }
    ],
    "afterAccept": false,
+   "star": true,
    "area": "庫漢",
    "id": "庫漢|提爾|海邊旅館的飲用水"
   },
@@ -1904,21 +1927,84 @@ window.JOBS_DATA = {
    "area": "萊爾特丘陵",
    "shop": "龍之遺跡",
    "npc": "休馬斯",
-   "name": "酸甜可口的果汁",
+   "name": "給口渴的人一瓶水",
    "deliverable": {
-    "name": "蘋果汁",
-    "quantity": null
+    "name": "裝水的瓶子",
+    "quantity": 5
    },
    "materials": [
     {
-     "name": "蘋果汁",
-     "quantity": null
+     "name": "裝水的瓶子",
+     "quantity": 5
     }
    ],
    "afterAccept": false,
    "source": "sheet",
-   "incomplete": true,
+   "id": "班克爾|休馬斯|給口渴的人一瓶水"
+  },
+  {
+   "city": "班克爾",
+   "area": "萊爾特丘陵",
+   "shop": "龍之遺跡",
+   "npc": "休馬斯",
+   "name": "酸甜可口的果汁",
+   "deliverable": {
+    "name": "蘋果汁",
+    "quantity": 1
+   },
+   "materials": [
+    {
+     "name": "蘋果",
+     "quantity": 4
+    },
+    {
+     "name": "藥草",
+     "quantity": 2
+    },
+    {
+     "name": "裝水的瓶子",
+     "quantity": 1
+    },
+    {
+     "name": "糖",
+     "quantity": 2
+    }
+   ],
+   "afterAccept": true,
+   "source": "sheet",
+   "craft": {
+    "type": "製作",
+    "times": 1
+   },
    "id": "班克爾|休馬斯|酸甜可口的果汁"
+  },
+  {
+   "city": "班克爾",
+   "area": "萊爾特丘陵",
+   "shop": "龍之遺跡",
+   "npc": "休馬斯",
+   "name": "驅散疲勞的音樂",
+   "deliverable": {
+    "name": "凱爾特魯特琴",
+    "quantity": 1
+   },
+   "materials": [
+    {
+     "name": "木材",
+     "quantity": 3
+    },
+    {
+     "name": "鐵錠",
+     "quantity": 1
+    }
+   ],
+   "afterAccept": true,
+   "source": "sheet",
+   "craft": {
+    "type": "製作",
+    "times": 1
+   },
+   "id": "班克爾|休馬斯|驅散疲勞的音樂"
   },
   {
    "city": "班克爾",
@@ -1927,24 +2013,341 @@ window.JOBS_DATA = {
    "npc": "休馬斯",
    "name": "【跑腿】偵查萊爾特丘陵東側月之門",
    "deliverable": {
-    "name": "跑腿",
+    "name": "跑腿-萊爾特丘陵東側月之門",
     "quantity": 1
    },
    "materials": [
     {
-     "name": "跑腿",
+     "name": "跑腿-萊爾特丘陵東側月之門",
      "quantity": 1
     }
    ],
    "afterAccept": false,
    "source": "sheet",
-   "incomplete": true,
    "id": "班克爾|休馬斯|偵查萊爾特丘陵東側月之門"
+  },
+  {
+   "city": "班克爾",
+   "area": "萊爾特丘陵",
+   "shop": "龍之遺跡",
+   "npc": "休馬斯",
+   "name": "【跑腿】偵查萊爾特丘陵西南側月之門",
+   "deliverable": {
+    "name": "跑腿-萊爾特丘陵西南側月之門",
+    "quantity": 1
+   },
+   "materials": [
+    {
+     "name": "跑腿-萊爾特丘陵西南側月之門",
+     "quantity": 1
+    }
+   ],
+   "afterAccept": false,
+   "source": "sheet",
+   "id": "班克爾|休馬斯|偵查萊爾特丘陵西南側月之門"
+  },
+  {
+   "city": "班克爾",
+   "area": "班克爾",
+   "shop": "酒館",
+   "npc": "珍妮佛",
+   "name": "滿懷溫暖的心意",
+   "deliverable": {
+    "name": "熟練營火套組",
+    "quantity": 1
+   },
+   "materials": [
+    {
+     "name": "樹枝",
+     "quantity": 5
+    },
+    {
+     "name": "高級原木",
+     "quantity": 4
+    },
+    {
+     "name": "石塊",
+     "quantity": 10
+    }
+   ],
+   "afterAccept": true,
+   "source": "sheet",
+   "craft": {
+    "type": "製作",
+    "times": 1
+   },
+   "id": "班克爾|珍妮佛|滿懷溫暖的心意"
+  },
+  {
+   "city": "班克爾",
+   "area": "班克爾",
+   "shop": "法皇聽",
+   "npc": "康格",
+   "name": "裝在小瓶裡的希望",
+   "deliverable": {
+    "name": "傷害減少藥水",
+    "quantity": 1
+   },
+   "materials": [
+    {
+     "name": "傷害減少藥水",
+     "quantity": 1
+    }
+   ],
+   "afterAccept": true,
+   "source": "sheet",
+   "craft": {
+    "type": "製作",
+    "times": 1
+   },
+   "note": "試算表沒寫原料，先以成品計算",
+   "id": "班克爾|康格|裝在小瓶裡的希望"
+  },
+  {
+   "city": "班克爾",
+   "area": "班克爾",
+   "shop": "法皇聽",
+   "npc": "康格",
+   "name": "【跑腿】偵查班克爾北門月之門",
+   "deliverable": {
+    "name": "跑腿-萊班克爾北門月之門",
+    "quantity": 1
+   },
+   "materials": [
+    {
+     "name": "跑腿-萊班克爾北門月之門",
+     "quantity": 1
+    }
+   ],
+   "afterAccept": false,
+   "source": "sheet",
+   "id": "班克爾|康格|偵查班克爾北門月之門"
+  },
+  {
+   "city": "班克爾",
+   "area": "班克爾",
+   "shop": "水車",
+   "npc": "尚",
+   "name": "送給朋友的禮物",
+   "deliverable": {
+    "name": "薰衣草花",
+    "quantity": 5
+   },
+   "materials": [
+    {
+     "name": "薰衣草花",
+     "quantity": 5
+    }
+   ],
+   "afterAccept": false,
+   "source": "sheet",
+   "id": "班克爾|尚|送給朋友的禮物"
+  },
+  {
+   "city": "班克爾",
+   "area": "班克爾",
+   "shop": "水車",
+   "npc": "尚",
+   "name": "需要好運的時候",
+   "deliverable": {
+    "name": "四葉草",
+    "quantity": 3
+   },
+   "materials": [
+    {
+     "name": "四葉草",
+     "quantity": 3
+    }
+   ],
+   "afterAccept": false,
+   "source": "sheet",
+   "id": "班克爾|尚|需要好運的時候"
+  },
+  {
+   "city": "班克爾",
+   "area": "班克爾",
+   "shop": "鐵匠鋪",
+   "npc": "艾頓",
+   "name": "謹慎鍛造的匕首",
+   "deliverable": {
+    "name": "平刃匕首",
+    "quantity": 1
+   },
+   "materials": [
+    {
+     "name": "鐵錠",
+     "quantity": 2
+    },
+    {
+     "name": "皮革",
+     "quantity": 2
+    }
+   ],
+   "afterAccept": true,
+   "source": "sheet",
+   "craft": {
+    "type": "製作",
+    "times": 1
+   },
+   "id": "班克爾|艾頓|謹慎鍛造的匕首"
+  },
+  {
+   "city": "班克爾",
+   "area": "班克爾",
+   "shop": "鐵匠鋪",
+   "npc": "艾頓",
+   "name": "厚實堅固的頭盔",
+   "deliverable": {
+    "name": "鱗甲頭盔",
+    "quantity": 1
+   },
+   "materials": [
+    {
+     "name": "鐵錠",
+     "quantity": 2
+    },
+    {
+     "name": "皮革",
+     "quantity": 1
+    }
+   ],
+   "afterAccept": true,
+   "source": "sheet",
+   "craft": {
+    "type": "製作",
+    "times": 1
+   },
+   "id": "班克爾|艾頓|厚實堅固的頭盔"
+  },
+  {
+   "city": "班克爾",
+   "area": "班克爾",
+   "shop": "鐵匠鋪",
+   "npc": "艾琳",
+   "name": "如雪花般冰冷的武器",
+   "deliverable": {
+    "name": "雪霜法球",
+    "quantity": 1
+   },
+   "materials": [
+    {
+     "name": "木材",
+     "quantity": 2
+    },
+    {
+     "name": "鐵錠",
+     "quantity": 2
+    }
+   ],
+   "afterAccept": true,
+   "source": "sheet",
+   "craft": {
+    "type": "製作",
+    "times": 1
+   },
+   "id": "班克爾|艾琳|如雪花般冰冷的武器"
+  },
+  {
+   "city": "班克爾",
+   "area": "班克爾",
+   "shop": "鐵匠鋪",
+   "npc": "艾琳",
+   "name": "堅韌結實的手套",
+   "deliverable": {
+    "name": "皮甲手套",
+    "quantity": 1
+   },
+   "materials": [
+    {
+     "name": "皮革",
+     "quantity": 2
+    },
+    {
+     "name": "絲綢",
+     "quantity": 2
+    }
+   ],
+   "afterAccept": true,
+   "source": "sheet",
+   "craft": {
+    "type": "製作",
+    "times": 1
+   },
+   "id": "班克爾|艾琳|堅韌結實的手套"
+  },
+  {
+   "city": "班克爾",
+   "area": "班克爾",
+   "shop": "鐵匠鋪",
+   "npc": "艾琳",
+   "name": "給工人們的戰鬥服",
+   "deliverable": {
+    "name": "戰鬥服上衣",
+    "quantity": 1
+   },
+   "materials": [
+    {
+     "name": "布料",
+     "quantity": 3
+    },
+    {
+     "name": "鐵錠",
+     "quantity": 1
+    }
+   ],
+   "afterAccept": true,
+   "source": "sheet",
+   "craft": {
+    "type": "製作",
+    "times": 1
+   },
+   "id": "班克爾|艾琳|給工人們的戰鬥服"
+  },
+  {
+   "city": "班克爾",
+   "area": "班克爾",
+   "shop": "鐵匠鋪",
+   "npc": "艾琳",
+   "name": "最後的材料",
+   "deliverable": {
+    "name": "皮革",
+    "quantity": 2
+   },
+   "materials": [
+    {
+     "name": "生皮",
+     "quantity": 20
+    }
+   ],
+   "afterAccept": true,
+   "source": "sheet",
+   "craft": {
+    "type": "加工",
+    "times": 2
+   },
+   "id": "班克爾|艾琳|最後的材料"
+  },
+  {
+   "city": "班克爾",
+   "area": "班克爾",
+   "shop": "懸崖",
+   "npc": "伊比",
+   "name": "幫我找到森林的幽靈",
+   "deliverable": {
+    "name": "幽靈螢火蟲",
+    "quantity": 5
+   },
+   "materials": [
+    {
+     "name": "幽靈螢火蟲",
+     "quantity": 5
+    }
+   ],
+   "afterAccept": false,
+   "source": "sheet",
+   "id": "班克爾|伊比|幫我找到森林的幽靈"
   }
  ],
- "siteUpdatedAt": "2026-09-26T10:29:16.260Z",
- "syncedAt": "2026-09-26 18:29",
- "incompleteRegions": [
-  "班克爾"
- ]
+ "siteUpdatedAt": "2026-10-03T02:05:13.224Z",
+ "syncedAt": "2026-10-03 10:05"
 };

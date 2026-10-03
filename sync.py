@@ -4,7 +4,8 @@
 規則：
 1. 以原網站 /api/jobs 為底
 2. 名稱帶【需要確認】的任務，改用試算表的資料
-3. 班克爾區只在試算表有，直接從試算表加入（資料未完成，數量可能是空的）
+3. 班克爾區只在試算表有，直接從試算表加入（備註欄＝製作/加工需要的原料）
+4. 試算表任務名稱是黃底的 → 標大推；要求寫「製作N次」「加工N次」→ 標製作／加工
 
 用法：python sync.py
 """
@@ -19,12 +20,24 @@ from pathlib import Path
 import openpyxl
 
 API_URL = "https://mabinogi-mobile-jobs.vtuberparrot2021.chatgpt.site/api/jobs"
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1dY03kiMC4x3jBB4gA71jdo2YqsLAgHC7kp-WmbsNSnU/export?format=xlsx"
+SHEET_URL = "https://docs.google.com/spreadsheets/d/1J2bhEzdvVkuyCFSnW31yTX7sE30mD4oEOHE7DnrXQjc/export?format=xlsx"
 OUT = Path(__file__).with_name("jobs-data.js")
 
 UNCONFIRMED = "【需要確認】"
 SHEET_REGIONS = ["堤爾克那", "杜巴頓", "庫漢", "班克爾"]
 SHEET_ONLY_REGIONS = ["班克爾"]
+STAR_FILL = "FFFFE599"  # 試算表「高價值兼職」的黃底
+
+# 同一種東西不同寫法 → 統一名稱，總數才會合併計算
+ALIASES = {
+    "水": "裝水的瓶子",
+    "一瓶裝滿水的瓶子": "裝水的瓶子",
+}
+
+# 試算表沒寫製作/加工，但實際需要的（使用者確認過）
+CRAFT_OVERRIDES = {
+    "滿懷溫暖的心意": {"type": "製作", "times": 1},
+}
 
 
 def fetch(url):
@@ -39,19 +52,36 @@ def plain_name(name):
     return re.sub(r"[？?！!\s]", "", name)
 
 
-def parse_requirement(req, qty):
-    """試算表的「要求」欄 → (交付物名稱, 是否跑腿, 備註)"""
+def alias(name):
+    return ALIASES.get(name, name)
+
+
+def parse_requirement(req):
+    """試算表的「要求」欄 → (交付物名稱, 是否跑腿, 製作/加工, 備註)"""
     req = str(req or "").strip()
     if req.startswith("跑腿"):
-        return req, True, ""
-    note = ""
+        return req, True, None, ""
+    craft, note = None, ""
     if "+交付" in req:
-        note, req = req.split("+交付", 1)
+        head, req = req.split("+交付", 1)
+        m = re.match(r"^(製作|加工)(\d+)次$", head)
+        if m:
+            craft = {"type": m.group(1), "times": int(m.group(2))}
+        else:
+            note = head
     m = re.match(r"^(.*?)\((.*)\)$", req)
     if m:
         req, extra = m.group(1), m.group(2)
         note = (note + " " + extra).strip()
-    return req, False, note
+    return req, False, craft, note
+
+
+def parse_materials(text):
+    """備註「4蘋果 2藥草 1 水 2糖」→ [{name, quantity}]"""
+    return [
+        {"name": alias(name), "quantity": int(n)}
+        for n, name in re.findall(r"(\d+)\s*([^\d\s]+)", str(text or ""))
+    ]
 
 
 def read_sheet(raw):
@@ -62,24 +92,29 @@ def read_sheet(raw):
             continue
         ws = wb[region]
         area = region
-        for r in ws.iter_rows(min_row=1, values_only=True):
-            a, shop, npc, name, req, qty = (list(r) + [None] * 6)[:6]
+        for cells in ws.iter_rows(min_row=1, max_col=7):
+            a, shop, npc, name, req, qty, memo = ([c.value for c in cells] + [None] * 7)[:7]
             if a and str(a).strip():
                 area = str(a).strip()
             if not name or name == "任務名稱":
                 continue
-            qty = int(qty) if isinstance(qty, (int, float)) else None
-            deliver, errand, note = parse_requirement(req, qty)
+            fill = cells[3].fill
+            star = bool(fill.fill_type) and fill.fgColor.rgb == STAR_FILL
+            deliver, errand, craft, note = parse_requirement(req)
+            name = str(name).strip()
+            craft = CRAFT_OVERRIDES.get(name, craft)
             rows.append({
                 "region": region, "area": area,
                 "shop": str(shop or "").strip(), "npc": str(npc or "").strip(),
-                "name": str(name).strip(), "deliver": deliver,
-                "qty": qty, "errand": errand, "note": note,
+                "name": name, "deliver": alias(deliver),
+                "qty": int(qty) if isinstance(qty, (int, float)) else None,
+                "errand": errand, "craft": craft, "note": note, "star": star,
+                "materials": parse_materials(memo),
             })
     return rows
 
 
-def sheet_row_to_job(row, incomplete):
+def sheet_row_to_job(row):
     name = row["name"]
     if row["errand"] and not name.startswith("【"):
         name = "【跑腿】" + name
@@ -87,13 +122,18 @@ def sheet_row_to_job(row, incomplete):
     job = {
         "city": row["region"], "area": row["area"],
         "shop": row["shop"], "npc": row["npc"], "name": name,
-        "deliverable": item, "materials": [item],
-        "afterAccept": False, "source": "sheet",
+        "deliverable": item,
+        "materials": row["materials"] or [dict(item)],
+        "afterAccept": bool(row["craft"]), "source": "sheet",
     }
+    if row["craft"]:
+        job["craft"] = row["craft"]
+        if not row["materials"]:
+            job["note"] = "試算表沒寫原料，先以成品計算"
     if row["note"]:
         job["note"] = row["note"]
-    if incomplete:
-        job["incomplete"] = True
+    if row["star"]:
+        job["star"] = True
     return job
 
 
@@ -102,25 +142,35 @@ def main():
     sheet = read_sheet(fetch(SHEET_URL))
     by_name = {plain_name(r["name"]): r for r in sheet}
 
-    jobs, patched, missing = [], [], []
+    jobs, patched, missing, starred = [], [], [], []
     for job in site["jobs"]:
         job = dict(job)
         job.pop("id", None)
+        row = by_name.get(plain_name(job["name"]))
         if UNCONFIRMED in job["name"]:
-            row = by_name.get(plain_name(job["name"]))
             if row:
-                fixed = sheet_row_to_job(row, incomplete=False)
+                fixed = sheet_row_to_job(row)
                 fixed["city"], fixed["area"] = job["city"], job["city"]
                 patched.append(f'{job["name"]} → {row["deliver"]}×{row["qty"]}')
                 job = fixed
             else:
                 missing.append(job["name"])
+        elif row:
+            # 原網站的資料為主，只從試算表補上 大推 與 製作/加工 標記
+            if row["craft"]:
+                job["craft"] = row["craft"]
+            if row["star"] and "【大推】" not in job["name"]:
+                job["star"] = True
+                starred.append(f'{job["city"]} {plain_name(job["name"])}')
+        for m in job["materials"]:
+            m["name"] = alias(m["name"])
+        job["deliverable"]["name"] = alias(job["deliverable"]["name"])
         job.setdefault("area", job["city"])
         jobs.append(job)
 
     for row in sheet:
         if row["region"] in SHEET_ONLY_REGIONS:
-            jobs.append(sheet_row_to_job(row, incomplete=True))
+            jobs.append(sheet_row_to_job(row))
 
     # id 用名稱組成，重新同步後已勾選的任務才不會跑掉
     seen = {}
@@ -133,7 +183,6 @@ def main():
         "jobs": jobs,
         "siteUpdatedAt": site.get("updatedAt"),
         "syncedAt": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "incompleteRegions": SHEET_ONLY_REGIONS,
     }
     OUT.write_text(
         "// 由 sync.py 產生，請勿手動修改\nwindow.JOBS_DATA = "
@@ -143,6 +192,8 @@ def main():
     print(f"共 {len(jobs)} 筆任務 → {OUT.name}")
     for p in patched:
         print("  以試算表修正：", p)
+    for s in starred:
+        print("  依黃底標大推：", s)
     for m in missing:
         print("  ⚠ 試算表找不到：", m)
 
