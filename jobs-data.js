@@ -121,12 +121,12 @@ window.JOBS_DATA = {
    "npc": "凱琳",
    "name": "新鮮的雞蛋",
    "deliverable": {
-    "name": "蛋",
+    "name": "雞蛋",
     "quantity": 5
    },
    "materials": [
     {
-     "name": "蛋",
+     "name": "雞蛋",
      "quantity": 5
     }
    ],
@@ -221,12 +221,12 @@ window.JOBS_DATA = {
    "npc": "麥爾坎",
    "name": "徵求材料",
    "deliverable": {
-    "name": "蛛網",
+    "name": "蜘蛛網",
     "quantity": 5
    },
    "materials": [
     {
-     "name": "蛛網",
+     "name": "蜘蛛網",
      "quantity": 5
     }
    ],
@@ -278,12 +278,12 @@ window.JOBS_DATA = {
    "npc": "迪莉絲",
    "name": "神秘的紅色草藥",
    "deliverable": {
-    "name": "血紅草藥",
+    "name": "血紅藥草",
     "quantity": 10
    },
    "materials": [
     {
-     "name": "血紅草藥",
+     "name": "血紅藥草",
      "quantity": 10
     }
    ],
@@ -1242,12 +1242,12 @@ window.JOBS_DATA = {
    "npc": "阿蘭雯",
    "name": "庭院與蝴蝶",
    "deliverable": {
-    "name": "白花蝶",
+    "name": "白花蝴蝶",
     "quantity": 5
    },
    "materials": [
     {
-     "name": "白花蝶",
+     "name": "白花蝴蝶",
      "quantity": 5
     }
    ],
@@ -1261,12 +1261,12 @@ window.JOBS_DATA = {
    "npc": "阿蘭雯",
    "name": "急救處置的基礎",
    "deliverable": {
-    "name": "草藥",
+    "name": "藥草",
     "quantity": 5
    },
    "materials": [
     {
-     "name": "草藥",
+     "name": "藥草",
      "quantity": 5
     }
    ],
@@ -1375,12 +1375,12 @@ window.JOBS_DATA = {
    "npc": "肯尼斯",
    "name": "神聖研究",
    "deliverable": {
-    "name": "血紅草藥",
+    "name": "血紅藥草",
     "quantity": 10
    },
    "materials": [
     {
-     "name": "血紅草藥",
+     "name": "血紅藥草",
      "quantity": 10
     }
    ],
@@ -1909,12 +1909,12 @@ window.JOBS_DATA = {
    "npc": "康納",
    "name": "完美的貝殼",
    "deliverable": {
-    "name": "貝類",
+    "name": "貝殼",
     "quantity": 5
    },
    "materials": [
     {
-     "name": "貝類",
+     "name": "貝殼",
      "quantity": 5
     }
    ],
@@ -2356,6 +2356,6 @@ window.JOBS_DATA = {
    "id": "班克爾|伊比|幫我找到森林的幽靈"
   }
  ],
- "siteUpdatedAt": "2026-10-03T02:15:14.312Z",
- "syncedAt": "2026-10-03 10:15"
+ "siteUpdatedAt": "2026-10-04T13:35:06.464Z",
+ "syncedAt": "2026-10-04 21:35"
 };

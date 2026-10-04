@@ -154,6 +154,9 @@ aside h2 small { font-size: 12px; color: var(--sky); font-weight: normal; }
 .mat.got .box { background: var(--accent); border-color: var(--accent); color: #fff; }
 .mat.got .mr span, .mat.got .mr b { color: var(--ink-3); text-decoration: line-through; }
 .mat.got .split { opacity: .5; }
+.mat.part .box { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.mr b small { font-size: 12px; color: var(--ink-3); font-weight: normal; }
+.split span.ok { text-decoration: line-through; opacity: .55; }
 .progress { font-size: 12px; color: var(--ink-3); padding: 8px 16px 0; }
 .split { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
 .split span { font-size: 11px; padding: 0 6px; border-radius: 5px; background: var(--surface-2); color: var(--ink-2); border-left: 3px solid; }
@@ -374,16 +377,28 @@ function collect() {
       }
     }
   }
-  return { idx, mats: [...mats.values()].sort((a, b) => b.total - a.total) };
+  const list = [...mats.values()].sort((a, b) => b.total - a.total);
+  // 打勾＝那隻角色的份已備好，從總數扣掉
+  for (const e of list) {
+    const need = Object.keys(e.per);
+    e.left = need.filter(i => !gotFor(i)[e.name]).reduce((s, i) => s + (+e.per[i] || 0), 0);
+    e.done = need.every(i => gotFor(i)[e.name]);
+    e.partial = !e.done && need.some(i => gotFor(i)[e.name]);
+  }
+  return { idx, mats: list };
 }
 
 const fmtTotal = m => m.unknown ? (m.total ? m.total + "+?" : "?") : m.total;
 
 // 原料打勾：六隻合計、每隻角色各自一份
-function gotSet() {
+function gotFor(i) {
   state.got = state.got || {};
-  const k = state.scope === "all" ? "all" : String(state.active);
-  return state.got[k] = state.got[k] || {};
+  return state.got[i] = state.got[i] || {};
+}
+// 舊版存檔的「六隻合計」打勾 → 轉成每隻角色都打勾
+if (state.got && state.got.all) {
+  for (const n of Object.keys(state.got.all)) for (let i = 0; i < 6; i++) gotFor(i)[n] = true;
+  delete state.got.all;
 }
 
 function renderSummary() {
@@ -394,16 +409,16 @@ function renderSummary() {
     <div class="stat" style="border-color:${CHAR_COLORS[i]}"><b>${Object.keys(c.sel).length}</b>${esc(c.name)}</div>`).join("");
 
   const { mats } = collect();
-  const got = gotSet();
   if (!mats.length) { $("mats").innerHTML = '<div class="empty">還沒有需要準備的材料</div>'; $("progress").textContent = ""; return; }
-  const done = mats.filter(m => got[m.name]).length;
+  const done = mats.filter(m => m.done).length;
   $("progress").textContent = `已備齊 ${done} / ${mats.length} 種${done === mats.length ? "　✓ 全部備齊" : ""}`;
   let html = "";
   for (const m of mats) {
     const split = Object.entries(m.per)
-      .map(([i, q]) => `<span style="border-color:${CHAR_COLORS[i]}">${esc(state.chars[i].name)} ${q}</span>`).join("");
-    html += `<div class="mat ${got[m.name] ? "got" : ""}" data-mat="${esc(m.name)}"><span class="box">✓</span><div>
-      <div class="mr"><span>${esc(m.name)}</span><b>${fmtTotal(m)}</b></div>
+      .map(([i, q]) => `<span class="${gotFor(i)[m.name] ? "ok" : ""}" style="border-color:${CHAR_COLORS[i]}">${esc(state.chars[i].name)} ${q}</span>`).join("");
+    const num = m.done ? fmtTotal(m) : m.partial ? `${m.left}<small> / ${fmtTotal(m)}</small>` : fmtTotal(m);
+    html += `<div class="mat ${m.done ? "got" : ""} ${m.partial ? "part" : ""}" data-mat="${esc(m.name)}"><span class="box">${m.partial ? "–" : "✓"}</span><div>
+      <div class="mr"><span>${esc(m.name)}</span><b>${num}</b></div>
       ${state.scope === "all" ? `<div class="split">${split}</div>` : ""}</div></div>`;
   }
   $("mats").innerHTML = html;
@@ -485,16 +500,27 @@ $("clearAll").addEventListener("click", () => {
 });
 $("mats").addEventListener("click", e => {
   const row = e.target.closest("[data-mat]"); if (!row) return;
-  const got = gotSet(), n = row.dataset.mat;
-  if (got[n]) delete got[n]; else got[n] = true;
+  const n = row.dataset.mat;
+  const m = collect().mats.find(x => x.name === n); if (!m) return;
+  // 合計：整列一起勾／取消；只看目前角色：只勾這隻
+  const who = state.scope === "all" ? Object.keys(m.per) : [String(state.active)];
+  const on = state.scope === "all" ? !m.done : !gotFor(state.active)[n];
+  who.forEach(i => { if (on) gotFor(i)[n] = true; else delete gotFor(i)[n]; });
   render();
 });
-$("clearGot").addEventListener("click", () => { const g = gotSet(); Object.keys(g).forEach(k => delete g[k]); render(); });
+$("clearGot").addEventListener("click", () => {
+  if (state.scope === "all") state.got = {}; else delete state.got[state.active];
+  render();
+});
 $("copyText").addEventListener("click", async () => {
   const { idx, mats } = collect();
   const lines = [state.scope === "all" ? "【六隻合計】" : `【${state.chars[state.active].name}】`];
-  mats.forEach(m => lines.push(`${m.name} ×${fmtTotal(m)}` +
-    (idx.length > 1 ? `（${Object.entries(m.per).map(([i, q]) => state.chars[i].name + " " + q).join("、")}）` : "")));
+  // 只複製還沒備好的部分
+  mats.filter(m => !m.done).forEach(m => {
+    const left = Object.entries(m.per).filter(([i]) => !gotFor(i)[m.name]);
+    lines.push(`${m.name} ×${m.unknown ? fmtTotal(m) : m.left}` +
+      (idx.length > 1 ? `（${left.map(([i, q]) => state.chars[i].name + " " + q).join("、")}）` : ""));
+  });
   copy(lines);
 });
 $("copyRoute").addEventListener("click", () => {
