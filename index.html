@@ -382,7 +382,9 @@ function collect() {
   for (const e of list) {
     const need = Object.keys(e.per);
     e.left = need.filter(i => !gotFor(i)[e.name]).reduce((s, i) => s + (+e.per[i] || 0), 0);
-    e.done = need.every(i => gotFor(i)[e.name]);
+    e.charsDone = need.every(i => gotFor(i)[e.name]);
+    // 合計畫面的打勾是獨立的，不會改到各角色
+    e.done = e.charsDone || (idx.length > 1 && !!gotAll()[e.name]);
     e.partial = !e.done && need.some(i => gotFor(i)[e.name]);
   }
   return { idx, mats: list };
@@ -395,9 +397,10 @@ function gotFor(i) {
   state.got = state.got || {};
   return state.got[i] = state.got[i] || {};
 }
-// 舊版存檔的「六隻合計」打勾 → 轉成每隻角色都打勾
+function gotAll() { return state.gotAll = state.gotAll || {}; }
+// 舊版存檔的「六隻合計」打勾搬到獨立欄位
 if (state.got && state.got.all) {
-  for (const n of Object.keys(state.got.all)) for (let i = 0; i < 6; i++) gotFor(i)[n] = true;
+  Object.assign(gotAll(), state.got.all);
   delete state.got.all;
 }
 
@@ -496,20 +499,23 @@ $("clearOne").addEventListener("click", () => {
   if (confirm(`清除「${c.name}」的所有勾選？`)) { c.sel = {}; if (state.got) delete state.got[state.active]; render(); }
 });
 $("clearAll").addEventListener("click", () => {
-  if (confirm("清除六隻角色的所有勾選？")) { state.chars.forEach(c => c.sel = {}); state.got = {}; render(); }
+  if (confirm("清除六隻角色的所有勾選？")) { state.chars.forEach(c => c.sel = {}); state.got = {}; state.gotAll = {}; render(); }
 });
 $("mats").addEventListener("click", e => {
   const row = e.target.closest("[data-mat]"); if (!row) return;
   const n = row.dataset.mat;
   const m = collect().mats.find(x => x.name === n); if (!m) return;
-  // 合計：整列一起勾／取消；只看目前角色：只勾這隻
-  const who = state.scope === "all" ? Object.keys(m.per) : [String(state.active)];
-  const on = state.scope === "all" ? !m.done : !gotFor(state.active)[n];
-  who.forEach(i => { if (on) gotFor(i)[n] = true; else delete gotFor(i)[n]; });
+  if (state.scope === "all") {
+    if (m.charsDone && !gotAll()[n]) { toast("各角色都已打勾，要取消請到該角色那邊"); return; }
+    if (gotAll()[n]) delete gotAll()[n]; else gotAll()[n] = true;
+  } else {
+    const g = gotFor(state.active);
+    if (g[n]) delete g[n]; else g[n] = true;
+  }
   render();
 });
 $("clearGot").addEventListener("click", () => {
-  if (state.scope === "all") state.got = {}; else delete state.got[state.active];
+  if (state.scope === "all") state.gotAll = {}; else delete state.got[state.active];
   render();
 });
 $("copyText").addEventListener("click", async () => {
